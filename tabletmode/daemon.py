@@ -1,5 +1,4 @@
 """System mode daemon."""
-import os
 from argparse import ArgumentParser, Namespace
 from logging import DEBUG, INFO, basicConfig, getLogger
 from subprocess import Popen
@@ -10,6 +9,7 @@ from tabletmode.config import load_config
 
 DESCRIPTION = 'Setup system for laptop or tablet mode.'
 EVTEST = '/usr/bin/evtest'
+GNOME_OSK = 'gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled'
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 LOGGER = getLogger('sysmoded')
 
@@ -27,16 +27,24 @@ def get_args() -> Namespace:
     return parser.parse_args()
 
 
+def set_osk_state(mode: str) -> None:
+    """Toggles on-screen keyboard for gnome"""
+
+    return Popen((GNOME_OSK, f"{str(mode == 'tablet').lower()}"))
+
+
 def disable_device(device: str) -> Popen:
     """Disables the respective device via evtest."""
 
     return Popen((EVTEST, '--grab', device))
 
 
-def disable_devices(devices: Iterable[str]) -> None:
+def set_mode(mode: str) -> None:
     """Disables the given devices."""
 
+    devices = get_devices(mode)
     subprocesses = []
+    subprocesses.append(set_osk_state(mode))
 
     for device in devices:
         subprocess = disable_device(device)
@@ -46,21 +54,16 @@ def disable_devices(devices: Iterable[str]) -> None:
         subprocess.wait()
 
 
-def get_devices(config, mode: str) -> Iterable[str]:
+def get_devices(mode: str) -> Iterable[str]:
     """Reads the device from the config file."""
 
+    config = load_config()
     devices = config.get(mode) or ()
 
     if not devices:
         LOGGER.info('No devices configured to disable.')
 
     return devices
-
-
-def set_osk_state(config, mode: str) -> None:
-    """Toggles on-screen keyboard for gnome"""
-
-    os.system(f"gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled {str(mode == 'tablet').lower()}")
 
 
 def main():
@@ -70,8 +73,4 @@ def main():
     level = DEBUG if arguments.verbose else INFO
     basicConfig(level=level, format=LOG_FORMAT)
 
-    config = load_config()
-
-    set_osk_state(config,arguments.mode)
-    devices = get_devices(config, arguments.mode)
-    disable_devices(devices)
+    set_mode(arguments.mode)
