@@ -72,6 +72,6 @@ def main():
 
     config = load_config()
 
+    set_osk_state(config,arguments.mode)
     devices = get_devices(config, arguments.mode)
     disable_devices(devices)
-    set_osk_state(config,arguments.mode)
