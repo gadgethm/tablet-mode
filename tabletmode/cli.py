@@ -48,7 +48,7 @@ def systemctl(action: str, unit: str, *, root: bool = False,
     return True
 
 def set_osk_state(state: bool) -> bool:
-    command = f"gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled {str(state).lower()}"
+    command = f"/usr/bin/gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled {str(state).lower()}"
     try:
         check_call(command, stdout=DEVNULL)
     except CalledProcessError:
@@ -107,7 +107,7 @@ def tablet_mode(notify: bool = False, *, sudo: str = SUDO) -> None:
     systemctl('stop', LAPTOP_MODE_SERVICE, root=True, sudo=sudo)
     systemctl('start', TABLET_MODE_SERVICE, root=True, sudo=sudo)
     set_osk_state(True)
-    
+
     if notify:
         notify_tablet_mode()
 
