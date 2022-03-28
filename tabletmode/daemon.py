@@ -1,5 +1,5 @@
 """System mode daemon."""
-
+import os
 from argparse import ArgumentParser, Namespace
 from logging import DEBUG, INFO, basicConfig, getLogger
 from subprocess import Popen
@@ -46,10 +46,9 @@ def disable_devices(devices: Iterable[str]) -> None:
         subprocess.wait()
 
 
-def get_devices(mode: str) -> Iterable[str]:
+def get_devices(config, mode: str) -> Iterable[str]:
     """Reads the device from the config file."""
 
-    config = load_config()
     devices = config.get(mode) or ()
 
     if not devices:
@@ -58,11 +57,21 @@ def get_devices(mode: str) -> Iterable[str]:
     return devices
 
 
+def set_osk_state(config, mode: str) -> None:
+    """Toggles on-screen keyboard for gnome"""
+
+    os.system(f"gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled {str(mode == "tablet").lower()}")
+
+
 def main():
     """Runs the main program."""
 
     arguments = get_args()
     level = DEBUG if arguments.verbose else INFO
     basicConfig(level=level, format=LOG_FORMAT)
-    devices = get_devices(arguments.mode)
+
+    config = load_config()
+
+    devices = get_devices(config, arguments.mode)
     disable_devices(devices)
+    set_osk_state(config,arguments.mode)
