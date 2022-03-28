@@ -1,4 +1,5 @@
 """System mode daemon."""
+
 from argparse import ArgumentParser, Namespace
 from logging import DEBUG, INFO, basicConfig, getLogger
 from subprocess import Popen
@@ -9,8 +10,6 @@ from tabletmode.config import load_config
 
 DESCRIPTION = 'Setup system for laptop or tablet mode.'
 EVTEST = '/usr/bin/evtest'
-GSETTINGS = '/usr/bin/gsettings'
-GNOME_OSK =  'set org.gnome.desktop.a11y.applications screen-keyboard-enabled'
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 LOGGER = getLogger('sysmoded')
 
@@ -28,24 +27,16 @@ def get_args() -> Namespace:
     return parser.parse_args()
 
 
-def set_osk_state(mode: str) -> None:
-    """Toggles on-screen keyboard for gnome"""
-
-    return Popen((GSETTINGS, f"{GNOME_OSK} {str(mode == 'tablet').lower()}"))
-
-
 def disable_device(device: str) -> Popen:
     """Disables the respective device via evtest."""
 
     return Popen((EVTEST, '--grab', device))
 
 
-def set_mode(mode: str) -> None:
+def disable_devices(devices: Iterable[str]) -> None:
     """Disables the given devices."""
 
-    devices = get_devices(mode)
     subprocesses = []
-    subprocesses.append(set_osk_state(mode))
 
     for device in devices:
         subprocess = disable_device(device)
@@ -73,5 +64,5 @@ def main():
     arguments = get_args()
     level = DEBUG if arguments.verbose else INFO
     basicConfig(level=level, format=LOG_FORMAT)
-
-    set_mode(arguments.mode)
+    devices = get_devices(arguments.mode)
+    disable_devices(devices)
