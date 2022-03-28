@@ -9,7 +9,8 @@ from tabletmode.config import load_config
 
 DESCRIPTION = 'Setup system for laptop or tablet mode.'
 EVTEST = '/usr/bin/evtest'
-GNOME_OSK = 'gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled'
+GSETTINGS = '/usr/bin/gsettings'
+GNOME_OSK =  'set org.gnome.desktop.a11y.applications screen-keyboard-enabled'
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 LOGGER = getLogger('sysmoded')
 
@@ -30,7 +31,7 @@ def get_args() -> Namespace:
 def set_osk_state(mode: str) -> None:
     """Toggles on-screen keyboard for gnome"""
 
-    return Popen((GNOME_OSK, f"{str(mode == 'tablet').lower()}"))
+    return Popen((GSETTINGS, f"{GNOME_OSK} {str(mode == 'tablet').lower()}"))
 
 
 def disable_device(device: str) -> Popen:
