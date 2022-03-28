@@ -48,7 +48,7 @@ def systemctl(action: str, unit: str, *, root: bool = False,
     return True
 
 def set_osk_state(state: bool) -> bool:
-    command = f"/usr/bin/gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled {str(state).lower()}"
+    command = ['/usr/bin/gsettings', 'set', 'org.gnome.desktop.a11y.applications', 'screen-keyboard-enabled', str(state).lower()]
     try:
         check_call(command, stdout=DEVNULL)
     except CalledProcessError:
