@@ -60,7 +60,7 @@ def get_devices(config, mode: str) -> Iterable[str]:
 def set_osk_state(config, mode: str) -> None:
     """Toggles on-screen keyboard for gnome"""
 
-    os.system(f"gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled {str(mode == "tablet").lower()}")
+    os.system(f"gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled {str(mode == 'tablet').lower()}")
 
 
 def main():
